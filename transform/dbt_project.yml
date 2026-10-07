@@ -1,0 +1,27 @@
+name: new_data
+version: "1.0.0"
+config-version: 2
+profile: new_data
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+seeds:
+  new_data:
+    orders:
+      +column_types:
+        order_id: integer
+        order_date: date
+        channel: varchar
+        amount: double
+
+models:
+  new_data:
+    staging:
+      +materialized: view
+      +schema: staging
+    marts:
+      +materialized: table
+      +schema: marts

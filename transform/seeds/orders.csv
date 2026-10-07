@@ -1,0 +1,17 @@
+order_id,order_date,channel,amount
+1,2026-09-01,direct,1840
+2,2026-09-01,distributor,6200
+3,2026-09-02,direct,960
+4,2026-09-02,distributor,4100
+5,2026-09-03,direct,2100
+6,2026-09-03,distributor,3800
+7,2026-09-04,direct,1500
+8,2026-09-04,distributor,7900
+9,2026-09-05,direct,3200
+10,2026-09-05,distributor,5400
+11,2026-09-08,direct,2750
+12,2026-09-08,distributor,6100
+13,2026-09-09,direct,1980
+14,2026-09-09,distributor,4500
+15,2026-09-10,direct,2400
+16,2026-09-10,distributor,8300

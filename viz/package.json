@@ -1,0 +1,12 @@
+{
+  "name": "new-data-viz",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "set OBSERVABLE_TELEMETRY_DISABLE=true&& observable preview",
+    "build": "set OBSERVABLE_TELEMETRY_DISABLE=true&& observable build"
+  },
+  "dependencies": {
+    "@observablehq/framework": "^1.13.0"
+  }
+}

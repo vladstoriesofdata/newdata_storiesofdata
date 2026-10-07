@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: Smoke-test orders. Replace the seed with a raw client file when one arrives.
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: order_date
+        data_tests: [not_null]
+      - name: channel
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["direct", "distributor"]
+      - name: amount
+        data_tests: [not_null]

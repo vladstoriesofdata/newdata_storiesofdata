@@ -1,0 +1,8 @@
+# Each dashboard measure has one SQL file. Pages render the result.
+# They do not recompute the definition.
+metrics:
+  - name: daily_revenue
+    description: Revenue and order count by day and channel.
+    grain: order_date, channel
+    query: semantic/daily_revenue.sql
+    model: marts.daily_revenue

@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: daily_revenue
+    description: Revenue and order count by day and channel. The semantic query reads this table.
+    columns:
+      - name: order_date
+        data_tests: [not_null]
+      - name: channel
+        data_tests: [not_null]
+      - name: revenue
+        data_tests: [not_null]
+      - name: orders
+        data_tests: [not_null]

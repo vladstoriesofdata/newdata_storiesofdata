@@ -1,0 +1,98 @@
+[
+  {
+    "order_date": "2026-09-01",
+    "channel": "direct",
+    "revenue": 1840.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-01",
+    "channel": "distributor",
+    "revenue": 6200.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-02",
+    "channel": "direct",
+    "revenue": 960.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-02",
+    "channel": "distributor",
+    "revenue": 4100.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-03",
+    "channel": "direct",
+    "revenue": 2100.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-03",
+    "channel": "distributor",
+    "revenue": 3800.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-04",
+    "channel": "direct",
+    "revenue": 1500.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-04",
+    "channel": "distributor",
+    "revenue": 7900.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-05",
+    "channel": "direct",
+    "revenue": 3200.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-05",
+    "channel": "distributor",
+    "revenue": 5400.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-08",
+    "channel": "direct",
+    "revenue": 2750.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-08",
+    "channel": "distributor",
+    "revenue": 6100.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-09",
+    "channel": "direct",
+    "revenue": 1980.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-09",
+    "channel": "distributor",
+    "revenue": 4500.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-10",
+    "channel": "direct",
+    "revenue": 2400.0,
+    "orders": 1
+  },
+  {
+    "order_date": "2026-09-10",
+    "channel": "distributor",
+    "revenue": 8300.0,
+    "orders": 1
+  }
+]
