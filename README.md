@@ -4,7 +4,7 @@ A single-machine analytics stack for mid-market clients: manufacturing, services
 
 ## Storage
 
-One DuckDB file per client: `warehouse/analytics.duckdb`. Raw CSV, Parquet, and Excel files land in `0_data_sources/`. DuckDB reads them in place and spills to disk, so 100GB does not need a cluster or a second database. The folder already holds `firme_romania.xlsx`; the pipeline loads that workbook into `raw.firme_romania`.
+One DuckDB file per client: `warehouse/analytics.duckdb`. Raw CSV, Parquet, and Excel files land in `0_data_sources/`. DuckDB reads them in place and spills to disk, so 100GB does not need a cluster or a second database. `firme_romania.xlsx` has two sheets. `date_financiare` is the yearly statement and `info_companii` is the company record. They join on `cui`. The pipeline loads each sheet into its own raw table.
 
 ## Processing
 
@@ -12,11 +12,11 @@ One DuckDB file per client: `warehouse/analytics.duckdb`. Raw CSV, Parquet, and 
 
 ## Semantic layer
 
-`semantic/metrics.yml` names each measure. The SQL file next to it is the only definition dashboards may use. `semantic/daily_revenue.sql` reads the dbt mart `marts.daily_revenue`.
+`semantic/metrics.yml` names each measure. The SQL file next to it is the only definition dashboards may use. National and county pages read sums by year. The company page reads one CUI at a time.
 
 ## Visualization
 
-Two code-built options, same metric:
+Two code-built options, same semantic queries:
 
 - `viz/` is an [Observable Framework](https://observablehq.com/framework/) app. A page is a Markdown file in git. Charts are [Observable Plot](https://observablehq.com/plot/) or D3 (`import * as d3 from "npm:d3"`). The data loader runs the semantic SQL and hands the page JSON. The 100GB file stays on disk.
 - `viz/preview/index.html` is one HTML file and D3, for a deliverable that should not carry a framework.

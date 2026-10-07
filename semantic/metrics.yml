@@ -1,8 +1,43 @@
-# Each dashboard measure has one SQL file. Pages render the result.
-# They do not recompute the definition.
+# Pages read these queries. They do not recompute sums or ratios.
+#
+# Amounts are RON as filed, not thousands. KFC 2024 turnover is 1.13 billion
+# and McDonald's Romania 2024 turnover is 2.01 billion, which matches full RON.
+#
+# Profit is the reported Profit column. It is not Venituri minus Cheltuieli.
+# On the rows where income and expenses are both present, that difference
+# disagrees with Profit more often than it agrees.
+#
+# Venituri, Cheltuieli, Stocuri, Disponibilitati, Creante, and Provizioane are
+# empty on most company-years (they show up mainly from 2019, for a few
+# hundred companies). They stay on the company series. They are not summed
+# into the national or county totals, because those sums would describe a
+# subset and look like a population total.
+#
+# County is the county on the company record, folded to one spelling and
+# applied to every year. It is not a historical address. A blank county is
+# NECUNOSCUT and still counts in the national total.
+#
+# Three companies were filed twice for 2021-2025 with the same turnover and
+# profit. The model keeps one row. Seven companies have a directory row and
+# no financial years.
 metrics:
-  - name: daily_revenue
-    description: Revenue and order count by day and channel.
-    grain: order_date, channel
-    query: semantic/daily_revenue.sql
-    model: marts.daily_revenue
+  - name: national_year
+    description: All reporting companies, one row per fiscal year.
+    grain: fiscal_year
+    query: semantic/national_year.sql
+    model: marts.mart_national_year
+  - name: county_year
+    description: The same sums, split by the company's recorded county.
+    grain: county, fiscal_year
+    query: semantic/county_year.sql
+    model: marts.mart_county_year
+  - name: companies
+    description: Directory of companies, including those with no financial years.
+    grain: cui
+    query: semantic/companies.sql
+    model: marts.mart_company
+  - name: company_year
+    description: One company and one fiscal year, including the sparse statement lines.
+    grain: cui, fiscal_year
+    query: semantic/company_year.sql
+    model: marts.mart_company_year

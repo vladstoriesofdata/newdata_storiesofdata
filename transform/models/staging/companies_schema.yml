@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: stg_companies
+    description: One row per company from info_companii. County spelling is folded; a missing county is NECUNOSCUT.
+    columns:
+      - name: cui
+        data_tests: [unique, not_null]
+      - name: company_name
+        data_tests: [not_null]
+      - name: county
+        data_tests: [not_null]
+      - name: caen
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [5610, 1085]
+  - name: stg_financials
+    description: One reported financial statement per company and year. Amounts are RON as filed, not thousands.
+    columns:
+      - name: cui
+        data_tests: [not_null]
+      - name: fiscal_year
+        data_tests: [not_null]
+      - name: turnover_ron
+        description: Cifra de afaceri.
+        data_tests: [not_null]
+      - name: profit_ron
+        description: Reported Profit. This is not recomputed from Venituri and Cheltuieli.
+        data_tests: [not_null]
+      - name: employees
+        description: Reported Angajati.
+        data_tests: [not_null]

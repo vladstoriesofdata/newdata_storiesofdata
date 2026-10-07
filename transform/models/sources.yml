@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: Workbook sheets loaded by pipeline/run.py. One row is not yet a company-year.
+    tables:
+      - name: date_financiare
+        description: Reported financial lines. Grain is meant to be one company (CUI) and one year.
+      - name: info_companii
+        description: One row per company. Joins to financials on cui.

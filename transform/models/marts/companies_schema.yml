@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: mart_company
+    description: Company directory, including companies that have no financial years.
+    columns:
+      - name: cui
+        data_tests: [unique, not_null]
+      - name: county
+        data_tests: [not_null]
+  - name: mart_company_year
+    description: >
+      One company and one fiscal year. County is the county recorded on the company,
+      applied to every year. It is not a year-specific address.
+    columns:
+      - name: cui
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('mart_company')
+              field: cui
+      - name: fiscal_year
+        data_tests: [not_null]
+      - name: turnover_ron
+        data_tests: [not_null]
+  - name: mart_national_year
+    description: Sums of reported amounts across companies, for one year. Balance-sheet lines are sums of year-end balances, not a consolidated statement.
+    columns:
+      - name: fiscal_year
+        data_tests: [unique, not_null]
+  - name: mart_county_year
+    description: Same sums as the national year, split by the company's recorded county.
+    columns:
+      - name: county
+        data_tests: [not_null]
+      - name: fiscal_year
+        data_tests: [not_null]
