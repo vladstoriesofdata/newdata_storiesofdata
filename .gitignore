@@ -1,4 +1,6 @@
 .venv/
+pipeline/_diagnose*
+pipeline/_profile_sources.py
 __pycache__/
 *.pyc
 
