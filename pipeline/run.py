@@ -17,7 +17,7 @@ WAREHOUSE = ROOT / "warehouse"
 DB_PATH = WAREHOUSE / "analytics.duckdb"
 TRANSFORM = ROOT / "transform"
 PREVIEW_DIR = ROOT / "viz" / "preview"
-METRICS = ("national_year", "county_year", "companies", "company_year")
+METRICS = ("national_year", "national_cagr", "county_year", "companies", "company_year")
 MAIN_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 
 

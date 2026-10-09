@@ -23,6 +23,25 @@ models:
         data_tests: [not_null]
       - name: turnover_ron
         data_tests: [not_null]
+  - name: mart_national_cagr
+    description: >
+      One row. Compound annual growth from the latest fiscal year back 3 and 10 years.
+      Null when an endpoint is not positive.
+    columns:
+      - name: current_year
+        data_tests: [unique, not_null]
+      - name: turnover_cagr_3
+        data_tests: [not_null]
+      - name: turnover_cagr_10
+        data_tests: [not_null]
+      - name: profit_cagr_3
+        data_tests: [not_null]
+      - name: profit_cagr_10
+        data_tests: [not_null]
+      - name: liabilities_cagr_3
+        data_tests: [not_null]
+      - name: liabilities_cagr_10
+        data_tests: [not_null]
   - name: mart_national_year
     description: Sums of reported amounts across companies, for one year. Balance-sheet lines are sums of year-end balances, not a consolidated statement.
     columns:

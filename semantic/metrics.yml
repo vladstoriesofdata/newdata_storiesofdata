@@ -26,6 +26,17 @@ metrics:
     grain: fiscal_year
     query: semantic/national_year.sql
     model: marts.mart_national_year
+  - name: national_cagr
+    description: >
+      Compound annual growth of national revenue, reported profit, and liabilities.
+      CAGR is (ending value / starting value) ^ (1 / n) - 1.
+      The 3-year rate uses the year three years before the latest year.
+      The 10-year rate uses the year ten years before the latest year.
+      A rate is null when either endpoint is not positive, because a negative
+      or zero base has no meaningful compound growth rate.
+    grain: current_year
+    query: semantic/national_cagr.sql
+    model: marts.mart_national_cagr
   - name: county_year
     description: The same sums, split by the company's recorded county.
     grain: county, fiscal_year

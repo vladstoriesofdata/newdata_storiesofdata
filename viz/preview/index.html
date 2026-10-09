@@ -5,127 +5,689 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Company financials</title>
   <style>
-    body { font: 15px/1.45 system-ui, sans-serif; margin: 32px; max-width: 960px; }
-    h1 { font-size: 22px; margin: 0 0 8px; }
-    h2 { font-size: 16px; margin: 28px 0 8px; }
-    p { margin: 0 0 12px; max-width: 68ch; }
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      font: 15px/1.4 "Segoe UI", system-ui, sans-serif;
+      margin: 0;
+      padding: 28px 32px 48px;
+      color: #1a1a1a;
+      background: #fff;
+    }
+    h1 { font-size: 22px; font-weight: 650; margin: 0 0 4px; }
+    h2 { font-size: 15px; font-weight: 650; margin: 32px 0 10px; }
+    .lede { margin: 0 0 20px; color: #444; max-width: 72ch; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+    .card {
+      border: 1px solid #e4e4e4;
+      border-top: 3px solid #1a1a1a;
+      padding: 14px 16px 16px;
+      min-width: 0;
+    }
+    .card .kicker {
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #555;
+      margin: 0 0 6px;
+    }
+    .card .value {
+      font-size: 28px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      margin: 0;
+    }
+    .card .delta { margin: 6px 0 0; font-size: 14px; font-weight: 650; font-variant-numeric: tabular-nums; }
+    .card .cagr { margin: 4px 0 0; font-size: 12px; color: #333; font-variant-numeric: tabular-nums; }
+    .card .cagr .up { color: #1a7f37; font-weight: 650; }
+    .card .cagr .down { color: #c0392b; font-weight: 650; }
+    .spark { display: block; width: 100%; height: 36px; margin-top: 10px; }
+    .delta.up { color: #1a7f37; }
+    .delta.down { color: #c0392b; }
+    .nav { display: flex; gap: 0; margin: 0 0 22px; border-bottom: 1px solid #1a1a1a; }
+    .nav button {
+      font: inherit;
+      font-weight: 650;
+      background: #fff;
+      color: #1a1a1a;
+      border: 1px solid #1a1a1a;
+      border-bottom: 0;
+      padding: 8px 18px;
+      margin: 0 6px -1px 0;
+      cursor: pointer;
+    }
+    .nav button.active { background: #1a1a1a; color: #fff; }
+    section[hidden] { display: none; }
+    .chart-head { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+    .legend { display: flex; gap: 16px; font-size: 12px; color: #333; }
+    .legend i { display: inline-block; width: 12px; height: 10px; margin-right: 6px; vertical-align: -1px; }
+    .swatch-py { background: #d0d0d0; }
+    .swatch-ac { background: #1a1a1a; }
+    .swatch-up { background: #1a7f37; }
+    .swatch-down { background: #c0392b; }
+    .swatch-line { background: transparent; border-top: 2px solid #1a1a1a; height: 0; width: 16px; vertical-align: 2px; }
+    #chart, #company, #pareto { width: 100%; }
+    #chart { cursor: pointer; }
+    .hint { margin: 0; color: #555; font-size: 13px; }
+    svg text { font-family: "Segoe UI", system-ui, sans-serif; fill: #333; }
+    .axis text { font-size: 11px; }
+    .axis path, .axis line { stroke: #c8c8c8; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+    table.data { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+    table.data th, table.data td { padding: 8px 12px; text-align: right; white-space: nowrap; vertical-align: bottom; }
+    table.data th:first-child, table.data td:first-child { text-align: left; }
+    table.data th {
+      font-size: 12px;
+      font-weight: 650;
+      color: #333;
+      border-bottom: 2px solid #1a1a1a;
+      background: #fff;
+      position: sticky;
+      top: 0;
+    }
+    table.data th button {
+      font: inherit;
+      font-weight: 650;
+      color: inherit;
+      background: none;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+    }
+    table.data td { border-bottom: 1px solid #ececec; }
+    .cell-bar { height: 5px; margin-top: 5px; }
+    .cell-bar span { display: block; height: 5px; background: #1a1a1a; }
+    .cell-bar span.neg { background: #8a8a8a; }
     label { display: block; margin: 8px 0; }
-    table { border-collapse: collapse; width: 100%; font-size: 13px; }
-    th, td { text-align: right; padding: 4px 8px; border-bottom: 1px solid #ddd; }
-    th:first-child, td:first-child { text-align: left; }
-    svg text { font-size: 11px; }
+    input, select { font: inherit; padding: 6px 8px; min-width: min(100%, 320px); }
+    #identity { color: #444; }
+    .tip {
+      position: fixed;
+      z-index: 20;
+      display: none;
+      pointer-events: none;
+      background: #fff;
+      border: 1px solid #1a1a1a;
+      padding: 8px 10px;
+      box-shadow: none;
+    }
+    .tip table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .tip th, .tip td { padding: 3px 8px; text-align: right; }
+    .tip th:first-child, .tip td:first-child { text-align: left; padding-left: 0; }
+    .tip th { font-weight: 650; border-bottom: 1px solid #1a1a1a; }
+    @media (max-width: 800px) {
+      body { padding: 20px 16px 36px; }
+      .cards { grid-template-columns: 1fr; }
+      .card .value { font-size: 24px; }
+    }
   </style>
 </head>
 <body>
-  <h1>Company financials</h1>
-  <p>Amounts are RON. Totals come from the semantic queries. This page only draws them.</p>
+  <nav class="nav" aria-label="Sections">
+    <button type="button" class="active" data-panel="national">National</button>
+    <button type="button" data-panel="company">Company</button>
+  </nav>
 
-  <h2>National turnover</h2>
-  <div id="national"></div>
-  <div id="national-table"></div>
+  <section id="panel-national">
+    <h1>National totals</h1>
+    <p class="lede">Each year overlaps the year before it by half a column. Gray is the previous year, black is the year itself. Green is an increase, red is a decrease. Amounts are RON. Profit is the reported profit column.</p>
+    <div class="cards" id="cards"></div>
 
-  <h2>County turnover</h2>
-  <label>Year <select id="year"></select></label>
-  <div id="county"></div>
+    <div class="chart-head">
+      <h2>Revenue and profit</h2>
+      <div class="legend">
+        <span><i class="swatch-py"></i>Previous year</span>
+        <span><i class="swatch-ac"></i>Current year</span>
+        <span><i class="swatch-up"></i>Increase</span>
+        <span><i class="swatch-down"></i>Decrease</span>
+        <span><i class="swatch-line"></i>Profit</span>
+      </div>
+    </div>
+    <div id="chart"></div>
 
-  <h2>One company</h2>
-  <label>Name, brand, or CUI <input id="query" placeholder="McDonald" /></label>
-  <label>Match <select id="match"></select></label>
-  <p id="identity"></p>
-  <div id="company"></div>
-  <div id="company-table"></div>
+    <div class="chart-head">
+      <h2>Revenue pareto <span id="pareto-year"></span></h2>
+      <p class="hint">Click a year above. The first 50 companies are shown, and the rest are Other.</p>
+    </div>
+    <div id="pareto"></div>
+
+    <h2>All years</h2>
+    <div class="table-wrap" id="national-table"></div>
+  </section>
+
+  <section id="panel-company" hidden>
+    <h1>One company</h1>
+    <label>Name, brand, or CUI <input id="query" placeholder="McDonald" /></label>
+    <label>Match <select id="match"></select></label>
+    <p id="identity"></p>
+    <div id="company"></div>
+    <div class="table-wrap" id="company-table"></div>
+  </section>
+  <div class="tip" id="tip"></div>
 
   <script type="module">
     import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
-    const [national, counties, companies, series] = await Promise.all([
+    const CURRENT = 2025;
+    const PREVIOUS = 2024;
+    const STEPS = 8;
+    const UP = "#1a7f37";
+    const DOWN = "#c0392b";
+    const [national, cagrRows, companies, series] = await Promise.all([
       d3.json("./national_year.json"),
-      d3.json("./county_year.json"),
+      d3.json("./national_cagr.json"),
       d3.json("./companies.json"),
       d3.json("./company_year.json")
     ]);
+    national.sort((a, b) => a.fiscal_year - b.fiscal_year);
+    const byYear = new Map(national.map((row) => [row.fiscal_year, row]));
+    const rates = cagrRows[0] || {};
+    const seriesByYear = d3.group(series, (row) => row.fiscal_year);
+    let selectedYear = byYear.has(CURRENT) ? CURRENT : national[national.length - 1].fiscal_year;
+
     const money = d3.format(",.0f");
-    const yearSelect = document.querySelector("#year");
-    const years = [...new Set(counties.map(d => d.fiscal_year))].sort((a, b) => a - b);
+    const pct = d3.format("+.1%");
+    const tip = document.querySelector("#tip");
 
-    function bars(target, data, label, value) {
-      const node = document.querySelector(target);
-      node.innerHTML = "";
-      const margin = {top: 8, right: 16, bottom: 28, left: label === "county" ? 120 : 48};
-      const width = 720;
-      const height = label === "county" ? Math.max(240, data.length * 16 + margin.top + margin.bottom) : 280;
-      const svg = d3.select(node).append("svg").attr("width", width).attr("height", height);
-      const horizontal = label === "county";
-      if (horizontal) {
-        const x = d3.scaleLinear().domain([0, d3.max(data, d => d.turnover_ron)]).nice().range([margin.left, width - margin.right]);
-        const y = d3.scaleBand().domain(data.map(d => d.county)).range([margin.top, height - margin.bottom]).padding(0.15);
-        svg.append("g").attr("transform", `translate(0,${height - margin.bottom})`).call(d3.axisBottom(x).ticks(4).tickFormat(d3.format("~s")));
-        svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y));
-        svg.append("g").selectAll("rect").data(data).join("rect")
-          .attr("x", margin.left)
-          .attr("y", d => y(d.county))
-          .attr("width", d => x(d.turnover_ron) - margin.left)
-          .attr("height", y.bandwidth())
-          .attr("fill", "#1f4b99");
-      } else {
-        const x = d3.scaleBand().domain(data.map(d => d.fiscal_year)).range([margin.left, width - margin.right]).padding(0.2);
-        const y = d3.scaleLinear().domain([0, d3.max(data, d => d.turnover_ron)]).nice().range([height - margin.bottom, margin.top]);
-        svg.append("g").attr("transform", `translate(0,${height - margin.bottom})`).call(d3.axisBottom(x).tickFormat(d3.format("d")));
-        svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d3.format("~s")));
-        svg.append("g").selectAll("rect").data(data).join("rect")
-          .attr("x", d => x(d.fiscal_year))
-          .attr("y", d => y(d.turnover_ron))
-          .attr("width", x.bandwidth())
-          .attr("height", d => y(0) - y(d.turnover_ron))
-          .attr("fill", "#1f4b99");
-      }
-    }
-
-    function table(target, rows, columns) {
-      const node = document.querySelector(target);
-      const head = columns.map(column => `<th>${column.label}</th>`).join("");
-      const body = rows.map(row => `<tr>${columns.map(column => `<td>${column.value(row)}</td>`).join("")}</tr>`).join("");
-      node.innerHTML = `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
-    }
-
-    const numberColumns = [
-      {label: "Year", value: d => d.fiscal_year},
-      {label: "Companies", value: d => d.companies},
-      {label: "Turnover", value: d => money(d.turnover_ron)},
-      {label: "Profit", value: d => money(d.profit_ron)},
-      {label: "Employees", value: d => money(d.employees)},
-      {label: "Margin", value: d => d.profit_margin == null ? "" : (d.profit_margin * 100).toFixed(1) + "%"}
+    const METRICS = [
+      {label: "Revenue", field: "turnover_ron", kind: "money"},
+      {label: "Profit", field: "profit_ron", kind: "money"},
+      {label: "Liabilities", field: "liabilities_ron", kind: "money"},
+      {label: "Equity", field: "equity_ron", kind: "money"},
+      {label: "Fixed assets", field: "fixed_assets_ron", kind: "money"},
+      {label: "Current assets", field: "current_assets_ron", kind: "money"},
+      {label: "Employees", field: "employees", kind: "int"},
+      {label: "Companies", field: "companies", kind: "int"},
+      {label: "Margin", field: "profit_margin", kind: "margin"}
     ];
 
-    bars("#national", national, "year");
-    table("#national-table", national, numberColumns);
+    function compact(value) {
+      const sign = value < 0 ? "−" : "";
+      const abs = Math.abs(value);
+      if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(1)} bn`;
+      if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(1)} m`;
+      return sign + money(abs);
+    }
 
-    for (const year of years) {
-      const option = document.createElement("option");
-      option.value = year;
-      option.textContent = year;
-      yearSelect.append(option);
+    function relativeDelta(current, previous) {
+      if (previous == null || previous === 0 || current == null) return null;
+      return (current - previous) / Math.abs(previous);
     }
-    yearSelect.value = years[years.length - 1];
-    function drawCounty() {
-      const rows = counties
-        .filter(d => d.fiscal_year === Number(yearSelect.value))
-        .sort((a, b) => b.turnover_ron - a.turnover_ron);
-      bars("#county", rows, "county");
+
+    function formatValue(metric, value) {
+      if (value == null || Number.isNaN(value)) return "—";
+      if (metric.kind === "margin") return (value * 100).toFixed(1) + "%";
+      if (metric.kind === "int") return money(value);
+      return money(value);
     }
-    yearSelect.addEventListener("change", drawCounty);
-    drawCounty();
+
+    function formatDelta(metric, current, previous) {
+      if (current == null || previous == null) return "—";
+      if (metric.kind === "margin") return d3.format("+.1f")((current - previous) * 100) + " pp";
+      const change = relativeDelta(current, previous);
+      return change == null ? "—" : pct(change);
+    }
+
+    function tone(change, upIsGood) {
+      if (change == null) return "";
+      return (upIsGood ? change >= 0 : change < 0) ? "up" : "down";
+    }
+
+    function sparkline(values) {
+      const width = 240;
+      const height = 36;
+      const present = values.filter((value) => value != null);
+      if (present.length < 2) return "";
+      const x = d3.scaleLinear().domain([0, values.length - 1]).range([2, width - 2]);
+      const y = d3.scaleLinear().domain(d3.extent(present)).range([height - 3, 3]);
+      const path = d3.line().defined((value) => value != null).x((value, index) => x(index)).y((value) => y(value))(values);
+      return `<svg class="spark" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><path d="${path}" fill="none" stroke="#1a1a1a" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+    }
+
+    function cagrLabel(field, years, upIsGood) {
+      const value = rates[field.replace("_ron", "_cagr_" + years)];
+      const start = rates["start_year_" + years];
+      const shown = value == null ? "—" : `<span class="${tone(value, upIsGood)}">${pct(value)}</span>`;
+      return `${years}-year CAGR ${shown} <span style="color:#777">${start}–${rates.current_year}</span>`;
+    }
+
+    const current = byYear.get(CURRENT);
+    const previous = byYear.get(PREVIOUS);
+    const cardSpecs = [
+      {label: "Revenue", field: "turnover_ron", upIsGood: true},
+      {label: "Profit", field: "profit_ron", upIsGood: true},
+      {label: "Liabilities", field: "liabilities_ron", upIsGood: false}
+    ];
+    document.querySelector("#cards").innerHTML = cardSpecs.map((spec) => {
+      const change = relativeDelta(current[spec.field], previous[spec.field]);
+      const seriesValues = national.map((row) => row[spec.field]);
+      return `<article class="card">
+        <p class="kicker">${spec.label}, ${CURRENT}</p>
+        <p class="value">${compact(current[spec.field])}</p>
+        ${sparkline(seriesValues)}
+        <p class="delta ${tone(change, spec.upIsGood)}">${change == null ? "" : pct(change) + " vs " + PREVIOUS}</p>
+        <p class="cagr">${cagrLabel(spec.field, 3, spec.upIsGood)}</p>
+        <p class="cagr">${cagrLabel(spec.field, 10, spec.upIsGood)}</p>
+      </article>`;
+    }).join("");
+
+    function metricsFor(row) {
+      return METRICS.filter((metric) => row && Object.prototype.hasOwnProperty.call(row, metric.field));
+    }
+
+    function showTip(event, row, prior) {
+      const year = row.fiscal_year;
+      const metrics = metricsFor(row);
+      const head = `<tr><th></th><th>${year}</th><th>${prior ? prior.fiscal_year : "—"}</th><th>Δ</th></tr>`;
+      const body = metrics.map((metric) => {
+        const now = row[metric.field];
+        const then = prior ? prior[metric.field] : null;
+        return `<tr><td>${metric.label}</td><td>${formatValue(metric, now)}</td><td>${formatValue(metric, then)}</td><td>${formatDelta(metric, now, then)}</td></tr>`;
+      }).join("");
+      tip.innerHTML = `<table>${head}${body}</table>`;
+      tip.style.display = "block";
+      const pad = 12;
+      const box = tip.getBoundingClientRect();
+      let left = event.clientX + pad;
+      let top = event.clientY + pad;
+      if (left + box.width > window.innerWidth - 8) left = event.clientX - box.width - pad;
+      if (top + box.height > window.innerHeight - 8) top = event.clientY - box.height - pad;
+      tip.style.left = Math.max(8, left) + "px";
+      tip.style.top = Math.max(8, top) + "px";
+    }
+
+    function hideTip() {
+      tip.style.display = "none";
+    }
+
+    function barGeometry(band, hasPrior) {
+      const barWidth = hasPrior ? band * (2 / 3) : band * 0.55;
+      const shift = hasPrior ? barWidth * 0.5 : (band - barWidth) / 2;
+      return {barWidth, shift};
+    }
+
+    function pairedChart(host, rows, index, selectable) {
+      host.innerHTML = "";
+      if (!rows.length || host.clientWidth < 20) return;
+      const width = host.clientWidth;
+      const height = host.id === "chart" ? 440 : 280;
+      const margin = {top: 46, right: 68, bottom: 32, left: 58};
+      const svg = d3.select(host).append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("role", "img")
+        .attr("aria-label", "Revenue columns overlap the previous year by half. Green marks an increase and red a decrease. Profit is the line.");
+
+      const x0 = d3.scaleBand()
+        .domain(rows.map((d) => d.fiscal_year))
+        .range([margin.left, width - margin.right])
+        .paddingInner(0.22)
+        .paddingOuter(0.06);
+      const revenuePeak = d3.max(rows, (d) => {
+        const prior = index.get(d.fiscal_year - 1);
+        return Math.max(d.turnover_ron || 0, prior ? prior.turnover_ron || 0 : 0);
+      });
+      const yRevenue = d3.scaleLinear()
+        .domain([0, revenuePeak])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
+      const yProfit = d3.scaleLinear()
+        .domain([Math.min(0, d3.min(rows, (d) => d.profit_ron)), d3.max(rows, (d) => d.profit_ron)])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
+
+      const yearTicks = rows.map((d) => d.fiscal_year).filter((year, i, list) => {
+        if (x0.bandwidth() >= 28) return true;
+        return i === 0 || i === list.length - 1 || year % 2 === 0;
+      });
+
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x0).tickFormat(d3.format("d")).tickValues(yearTicks))
+        .call((g) => g.select(".domain").attr("stroke", "#1a1a1a"))
+        .call((g) => g.selectAll("text").attr("font-weight", (year) => selectable && year === selectedYear ? 700 : 400));
+
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(yRevenue).ticks(5).tickFormat(d3.format("~s")).tickSize(-(width - margin.left - margin.right)))
+        .call((g) => {
+          g.select(".domain").remove();
+          g.selectAll("line").attr("stroke", "#eee");
+        });
+
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(${width - margin.right},0)`)
+        .call(d3.axisRight(yProfit).ticks(host.id === "chart" ? 5 : 4).tickFormat(d3.format("~s")))
+        .call((g) => g.select(".domain").remove());
+      if (host.id === "chart") {
+        svg.append("text").attr("x", margin.left).attr("y", 12).attr("font-size", 11).attr("fill", "#666").text("Revenue, RON");
+        svg.append("text").attr("x", width - margin.right).attr("y", 12).attr("text-anchor", "end").attr("font-size", 11).attr("fill", "#666").text("Profit, RON");
+      }
+
+      const groups = svg.append("g")
+        .selectAll("g")
+        .data(rows)
+        .join("g")
+        .attr("transform", (d) => `translate(${x0(d.fiscal_year)},0)`);
+
+      groups.each(function (d) {
+        const g = d3.select(this);
+        const prior = index.get(d.fiscal_year - 1);
+        const ac = Math.max(d.turnover_ron || 0, 0);
+        const py = prior ? Math.max(prior.turnover_ron || 0, 0) : null;
+        const {barWidth, shift} = barGeometry(x0.bandwidth(), py != null);
+        if (selectable && d.fiscal_year === selectedYear) {
+          g.append("rect")
+            .attr("x", -3)
+            .attr("y", margin.top)
+            .attr("width", x0.bandwidth() + 6)
+            .attr("height", height - margin.bottom - margin.top)
+            .attr("fill", "#f3f3f3");
+        }
+        if (py != null) {
+          g.append("rect")
+            .attr("x", 0)
+            .attr("y", yRevenue(py))
+            .attr("width", barWidth)
+            .attr("height", Math.max(0, yRevenue(0) - yRevenue(py)))
+            .attr("fill", "#d0d0d0");
+        }
+        g.append("rect")
+          .attr("x", shift)
+          .attr("y", yRevenue(ac))
+          .attr("width", barWidth)
+          .attr("height", Math.max(0, yRevenue(0) - yRevenue(ac)))
+          .attr("fill", "#1a1a1a");
+        if (py != null && ac !== py) {
+          const higher = Math.max(ac, py);
+          const lower = Math.min(ac, py);
+          const increase = ac > py;
+          g.append("rect")
+            .attr("x", increase ? shift : 0)
+            .attr("y", yRevenue(higher))
+            .attr("width", barWidth)
+            .attr("height", Math.max(0, yRevenue(lower) - yRevenue(higher)))
+            .attr("fill", increase ? UP : DOWN);
+          const change = relativeDelta(ac, py);
+          if (change != null) {
+            g.append("text")
+              .attr("class", "delta-label")
+              .attr("x", shift + barWidth / 2)
+              .attr("y", 28)
+              .attr("text-anchor", "middle")
+              .attr("font-size", x0.bandwidth() >= 40 ? 10 : 8)
+              .attr("font-weight", 650)
+              .attr("fill", increase ? UP : DOWN)
+              .text(pct(change));
+          }
+        }
+      });
+
+      const center = (d) => {
+        const {barWidth, shift} = barGeometry(x0.bandwidth(), index.has(d.fiscal_year - 1));
+        return x0(d.fiscal_year) + shift + barWidth / 2;
+      };
+      svg.append("path")
+        .datum(rows)
+        .attr("fill", "none")
+        .attr("stroke", "#1a1a1a")
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line().x(center).y((d) => yProfit(d.profit_ron)));
+      svg.append("g")
+        .selectAll("circle")
+        .data(rows)
+        .join("circle")
+        .attr("cx", center)
+        .attr("cy", (d) => yProfit(d.profit_ron))
+        .attr("r", 2.5)
+        .attr("fill", "#fff")
+        .attr("stroke", "#1a1a1a")
+        .attr("stroke-width", 1.2);
+
+      svg.append("g")
+        .selectAll("rect")
+        .data(rows)
+        .join("rect")
+        .attr("x", (d) => x0(d.fiscal_year))
+        .attr("y", margin.top - 18)
+        .attr("width", x0.bandwidth())
+        .attr("height", height - margin.bottom - margin.top + 18)
+        .attr("fill", "transparent")
+        .on("mousemove", (event, d) => showTip(event, d, index.get(d.fiscal_year - 1)))
+        .on("mouseleave", hideTip)
+        .on("click", (event, d) => {
+          if (!selectable) return;
+          selectedYear = d.fiscal_year;
+          drawCombo();
+          drawPareto();
+        });
+    }
+
+    function paretoItems(year) {
+      const rows = seriesByYear.get(year) || [];
+      const total = d3.sum(rows, (row) => row.turnover_ron || 0);
+      const ranked = rows.slice().sort((a, b) => (b.turnover_ron || 0) - (a.turnover_ron || 0));
+      const top = ranked.slice(0, 50);
+      const items = top.map((row) => ({
+        key: String(row.cui),
+        label: row.brand || row.company_name || String(row.cui),
+        revenue: row.turnover_ron || 0
+      }));
+      if (ranked.length > 50) {
+        items.push({
+          key: "other",
+          label: "Other",
+          revenue: total - d3.sum(top, (row) => row.turnover_ron || 0)
+        });
+      }
+      let running = 0;
+      return items.map((item) => {
+        running += item.revenue;
+        return {...item, cum: total ? running / total : 0};
+      });
+    }
+
+    function drawPareto() {
+      const host = document.querySelector("#pareto");
+      host.innerHTML = "";
+      document.querySelector("#pareto-year").textContent = "· " + selectedYear;
+      const items = paretoItems(selectedYear);
+      if (!items.length || host.clientWidth < 20) return;
+      const width = host.clientWidth;
+      const height = 480;
+      const margin = {top: 18, right: 58, bottom: 132, left: 58};
+      const svg = d3.select(host).append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("role", "img")
+        .attr("aria-label", `Revenue of the 50 largest companies in ${selectedYear}, with the rest as Other, and a cumulative share line.`);
+      const x = d3.scaleBand()
+        .domain(items.map((item) => item.key))
+        .range([margin.left, width - margin.right])
+        .padding(0.18);
+      const y = d3.scaleLinear()
+        .domain([Math.min(0, d3.min(items, (item) => item.revenue)), d3.max(items, (item) => item.revenue)])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
+      const yShare = d3.scaleLinear().domain([0, 1]).range([height - margin.bottom, margin.top]);
+      const names = new Map(items.map((item) => [item.key, item.label]));
+
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format("~s")).tickSize(-(width - margin.left - margin.right)))
+        .call((g) => {
+          g.select(".domain").remove();
+          g.selectAll("line").attr("stroke", "#eee");
+        });
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(${width - margin.right},0)`)
+        .call(d3.axisRight(yShare).ticks(5).tickFormat(d3.format(".0%")))
+        .call((g) => g.select(".domain").remove());
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x).tickFormat((key) => {
+          const name = names.get(key) || "";
+          return name.length > 22 ? name.slice(0, 21) + "…" : name;
+        }))
+        .call((g) => {
+          g.select(".domain").attr("stroke", "#1a1a1a");
+          g.selectAll("text")
+            .attr("text-anchor", "end")
+            .attr("transform", "rotate(-65)")
+            .attr("dx", "-0.4em")
+            .attr("dy", "0.1em")
+            .attr("font-size", 9);
+        });
+      svg.append("text").attr("x", margin.left).attr("y", 12).attr("font-size", 11).attr("fill", "#666").text("Revenue, RON");
+      svg.append("text").attr("x", width - margin.right).attr("y", 12).attr("text-anchor", "end").attr("font-size", 11).attr("fill", "#666").text("% of total");
+      const other = items[items.length - 1];
+      if (other && other.key === "other") {
+        const share = other.cum - (items.length > 1 ? items[items.length - 2].cum : 0);
+        svg.append("text")
+          .attr("x", x(other.key) + x.bandwidth() / 2)
+          .attr("y", Math.max(margin.top + 12, y(Math.max(other.revenue, 0)) - 6))
+          .attr("text-anchor", "middle")
+          .attr("font-size", 11)
+          .attr("font-weight", 650)
+          .attr("fill", "#333")
+          .text(d3.format(".0%")(share));
+      }
+
+      svg.append("g")
+        .selectAll("rect")
+        .data(items)
+        .join("rect")
+        .attr("x", (item) => x(item.key))
+        .attr("y", (item) => y(Math.max(item.revenue, 0)))
+        .attr("width", x.bandwidth())
+        .attr("height", (item) => Math.abs(y(item.revenue) - y(0)))
+        .attr("fill", (item) => item.key === "other" ? "#b5b5b5" : "#1a1a1a")
+        .append("title")
+        .text((item) => `${item.label}: ${money(item.revenue)} (${pct(item.revenue / (d3.sum(items, (row) => row.revenue) || 1)).replace("+", "")})`);
+
+      svg.append("path")
+        .datum(items)
+        .attr("fill", "none")
+        .attr("stroke", "#1c4f8a")
+        .attr("stroke-width", 1.6)
+        .attr("d", d3.line().x((item) => x(item.key) + x.bandwidth() / 2).y((item) => yShare(item.cum)));
+      svg.append("g")
+        .selectAll("circle")
+        .data(items)
+        .join("circle")
+        .attr("cx", (item) => x(item.key) + x.bandwidth() / 2)
+        .attr("cy", (item) => yShare(item.cum))
+        .attr("r", 2.2)
+        .attr("fill", "#1c4f8a")
+        .append("title")
+        .text((item) => `${item.label}: ${pct(item.cum).replace("+", "")} of ${selectedYear} revenue`);
+    }
+
+    function drawCombo() {
+      pairedChart(document.querySelector("#chart"), national, byYear, true);
+    }
+    drawCombo();
+    drawPareto();
+    new ResizeObserver(() => {
+      drawCombo();
+      drawPareto();
+    }).observe(document.querySelector("#chart"));
+
+    function discreteShare(value, maxAbs) {
+      if (value == null || maxAbs === 0) return 0;
+      const ratio = Math.min(1, Math.abs(value) / maxAbs);
+      if (ratio === 0) return 0;
+      return Math.ceil(ratio * STEPS) / STEPS;
+    }
+
+    function cell(column, row) {
+      if (!column.bar) return column.value(row);
+      const width = discreteShare(column.raw(row), column.maxAbs);
+      const negative = column.raw(row) < 0;
+      return `<div>${column.value(row)}</div><div class="cell-bar"><span class="${negative ? "neg" : ""}" style="width:${width * 100}%"></span></div>`;
+    }
+
+    function mountTable(target, sourceRows, columns) {
+      const state = {key: "fiscal_year", dir: -1};
+      const host = document.querySelector(target);
+      function draw() {
+        const rows = sourceRows.slice().sort((a, b) => {
+          const av = a[state.key];
+          const bv = b[state.key];
+          if (av == null && bv == null) return 0;
+          if (av == null) return 1;
+          if (bv == null) return -1;
+          if (av === bv) return b.fiscal_year - a.fiscal_year;
+          return av > bv ? state.dir : av < bv ? -state.dir : 0;
+        });
+        const head = columns.map((column) => {
+          const mark = state.key === column.key ? (state.dir < 0 ? " ↓" : " ↑") : "";
+          return `<th><button type="button" data-key="${column.key}">${column.label}${mark}</button></th>`;
+        }).join("");
+        const body = rows.map((row) => `<tr>${columns.map((column) => `<td>${cell(column, row)}</td>`).join("")}</tr>`).join("");
+        host.innerHTML = `<table class="data"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+        host.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", () => {
+            const key = button.dataset.key;
+            state.dir = state.key === key ? -state.dir : (key === "fiscal_year" ? -1 : -1);
+            state.key = key;
+            draw();
+          });
+        });
+      }
+      draw();
+      return draw;
+    }
+
+    function withBars(columns, rows) {
+      return columns.map((column) => {
+        if (!column.raw) return column;
+        const maxAbs = d3.max(rows, (row) => Math.abs(column.raw(row) || 0)) || 0;
+        return {...column, bar: true, maxAbs};
+      });
+    }
+
+    const nationalColumns = withBars([
+      {label: "Year", key: "fiscal_year", value: (d) => d.fiscal_year},
+      {label: "Companies", key: "companies", raw: (d) => d.companies, value: (d) => money(d.companies)},
+      {label: "Revenue", key: "turnover_ron", raw: (d) => d.turnover_ron, value: (d) => money(d.turnover_ron)},
+      {label: "Profit", key: "profit_ron", raw: (d) => d.profit_ron, value: (d) => money(d.profit_ron)},
+      {label: "Liabilities", key: "liabilities_ron", raw: (d) => d.liabilities_ron, value: (d) => money(d.liabilities_ron)},
+      {label: "Employees", key: "employees", raw: (d) => d.employees, value: (d) => money(d.employees)},
+      {label: "Margin", key: "profit_margin", raw: (d) => d.profit_margin, value: (d) => d.profit_margin == null ? "" : (d.profit_margin * 100).toFixed(1) + "%"}
+    ], national);
+    mountTable("#national-table", national, nationalColumns);
 
     const query = document.querySelector("#query");
     const match = document.querySelector("#match");
-    const byCui = d3.group(series, d => d.cui);
+    const byCui = d3.group(series, (d) => d.cui);
+    let companyRows = [];
+    let redrawCompanyTable = () => {};
+
+    function drawCompanyChart() {
+      if (document.querySelector("#panel-company").hidden) return;
+      const index = new Map(companyRows.map((row) => [row.fiscal_year, row]));
+      pairedChart(document.querySelector("#company"), companyRows.slice().sort((a, b) => a.fiscal_year - b.fiscal_year), index, false);
+    }
 
     function drawCompany() {
       const text = query.value.trim().toLowerCase();
       const matches = text
-        ? companies.filter(company => [company.company_name, company.brand, String(company.cui)].join(" ").toLowerCase().includes(text)).slice(0, 20)
+        ? companies.filter((company) => [company.company_name, company.brand, String(company.cui)].join(" ").toLowerCase().includes(text)).slice(0, 20)
         : [];
-      const previous = match.value;
+      const previousChoice = match.value;
       match.innerHTML = "";
       for (const company of matches) {
         const option = document.createElement("option");
@@ -133,23 +695,52 @@
         option.textContent = `${company.company_name} (${company.cui})`;
         match.append(option);
       }
-      if ([...match.options].some(option => option.value === previous)) match.value = previous;
-      const company = companies.find(item => String(item.cui) === match.value);
-      const history = company ? (byCui.get(company.cui) || []).slice().sort((a, b) => a.fiscal_year - b.fiscal_year) : [];
+      if ([...match.options].some((option) => option.value === previousChoice)) match.value = previousChoice;
+      const company = companies.find((item) => String(item.cui) === match.value);
+      companyRows = company ? (byCui.get(company.cui) || []).slice() : [];
       document.querySelector("#identity").textContent = company
         ? `${company.brand} · ${company.county} · ${company.locality} · CAEN ${company.caen} ${company.caen_label}`
         : "Type a name or CUI.";
-      bars("#company", history.map(d => ({fiscal_year: d.fiscal_year, turnover_ron: d.turnover_ron})), "year");
-      table("#company-table", history, [
-        {label: "Year", value: d => d.fiscal_year},
-        {label: "Turnover", value: d => money(d.turnover_ron)},
-        {label: "Profit", value: d => money(d.profit_ron)},
-        {label: "Employees", value: d => d.employees},
-        {label: "Equity", value: d => d.equity_ron == null ? "" : money(d.equity_ron)}
-      ]);
+      drawCompanyChart();
+      const columns = withBars([
+        {label: "Year", key: "fiscal_year", value: (d) => d.fiscal_year},
+        {label: "Revenue", key: "turnover_ron", raw: (d) => d.turnover_ron, value: (d) => money(d.turnover_ron)},
+        {label: "Profit", key: "profit_ron", raw: (d) => d.profit_ron, value: (d) => money(d.profit_ron)},
+        {label: "Liabilities", key: "liabilities_ron", raw: (d) => d.liabilities_ron, value: (d) => d.liabilities_ron == null ? "" : money(d.liabilities_ron)},
+        {label: "Employees", key: "employees", raw: (d) => d.employees, value: (d) => d.employees},
+        {label: "Equity", key: "equity_ron", raw: (d) => d.equity_ron, value: (d) => d.equity_ron == null ? "" : money(d.equity_ron)}
+      ], companyRows);
+      redrawCompanyTable = mountTable("#company-table", companyRows, columns);
     }
+
+    function showPanel(panel) {
+      document.querySelectorAll(".nav button").forEach((item) => item.classList.toggle("active", item.dataset.panel === panel));
+      document.querySelector("#panel-national").hidden = panel !== "national";
+      document.querySelector("#panel-company").hidden = panel !== "company";
+      if (panel === "national") {
+        drawCombo();
+        drawPareto();
+      } else {
+        drawCompanyChart();
+      }
+    }
+
     query.addEventListener("input", drawCompany);
     match.addEventListener("change", drawCompany);
+    document.querySelectorAll(".nav button").forEach((button) => {
+      button.addEventListener("click", () => {
+        history.replaceState(null, "", button.dataset.panel === "company" ? "#company" : "#national");
+        showPanel(button.dataset.panel);
+      });
+    });
+    if (location.hash === "#company") showPanel("company");
+    window.addEventListener("resize", () => {
+      if (!document.querySelector("#panel-national").hidden) {
+        drawCombo();
+        drawPareto();
+      }
+      drawCompanyChart();
+    });
     drawCompany();
   </script>
 </body>
